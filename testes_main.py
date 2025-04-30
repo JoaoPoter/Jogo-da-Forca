@@ -98,4 +98,3 @@ while True:
                 print("Invalid input. Please enter a single letter or 'hint'.")
                 time.sleep(2.5)
             continue
-

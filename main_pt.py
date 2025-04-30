@@ -1,6 +1,6 @@
 import os
 import time
-from hangman import display_hangman  # Certifique-se de que esta função está traduzida também
+from hangman import display_hangman
 
 def limpar_tela():
     os.system("cls" if os.name == "nt" else "clear")
@@ -8,27 +8,29 @@ def limpar_tela():
 while True:
     desafiante = input("Desafiante, digite seu nome: ").strip()
     competidor = input("Competidor, digite seu nome: ").strip()
-    erros = 0
+
     limpar_tela()
-
     palavra_secreta = input("Desafiante, digite a palavra secreta: ").strip().lower()
-    dicas = [input("Dica 1"),input("Dica 2"), input("Dica 3")]
-    indice_dica = 0
-    dica_usada = False
-    letras_tentadas = []
+    dicas = [input(f"Dica {i + 1}: ").strip() for i in range(3)]
 
+    letras_tentadas = []
     palavra_oculta = '*' * len(palavra_secreta)
+    erros = 0
+    dica_usada = False
+    indice_dica = 0
 
     while True:
         limpar_tela()
         print(f"Palavra escolhida por {desafiante}: {palavra_oculta}")
-        print(f"Letras tentadas: {', '.join(letras_tentadas)}")
+        print(f"Letras tentadas: {', '.join(letras_tentadas) or 'Nenhuma'}")
         display_hangman(erros)
 
+        prompt = f"{competidor}, tente uma letra, a palavra"
         if not dica_usada and indice_dica < len(dicas):
-            tentativa = input(f"{competidor}, tente uma letra, a palavra ou digite 'dica' para ver a dica {indice_dica + 1}: ").lower()
+            prompt += f" ou digite 'dica' para a dica {indice_dica + 1}: "
         else:
-            tentativa = input(f"{competidor}, tente uma letra ou a palavra: ").lower()
+            prompt += ": "
+        tentativa = input(prompt).strip().lower()
 
         if tentativa == "dica":
             if not dica_usada and indice_dica < len(dicas):
@@ -44,45 +46,37 @@ while True:
 
         if len(tentativa) == 1 and tentativa.isalpha():
             if tentativa in letras_tentadas:
-                print(f"Você já tentou a letra '{tentativa}'. Tente outra.")
-                time.sleep(2)
-                continue
-
-            letras_tentadas.append(tentativa)
-            dica_usada = False  # Libera a dica novamente na próxima tentativa
-
-            if tentativa in palavra_secreta:
-                print(f"Boa, {competidor}! A letra '{tentativa}' está na palavra.")
-                palavra_oculta = ''.join([
-                    letra if letra == tentativa or letra == palavra_oculta[i] else '*'
-                    for i, letra in enumerate(palavra_secreta)
-                ])
-                time.sleep(2)
-
-                if palavra_oculta == palavra_secreta:
-                    limpar_tela()
-                    print(f"Parabéns, {competidor}! Você adivinhou a palavra '{palavra_secreta}'!")
-                    print("E você estava por um triz da forca!")
-                    display_hangman(erros)
-                    time.sleep(3)
-                    break
+                print(f"Você já tentou a letra '{tentativa}'.")
             else:
-                print(f"A letra '{tentativa}' não está na palavra.")
-                erros += 1
-                time.sleep(2)
+                letras_tentadas.append(tentativa)
+                dica_usada = False
 
-                if erros == 6:
-                    limpar_tela()
-                    display_hangman(erros)
-                    print(f"Fim de jogo! A palavra era '{palavra_secreta}'.")
-                    print(f"Parabéns {desafiante}, você venceu!")
-                    time.sleep(3)
-                    break
+                if tentativa in palavra_secreta:
+                    palavra_oculta = ''.join([
+                        letra if letra == tentativa or letra == palavra_oculta[i] else '*'
+                        for i, letra in enumerate(palavra_secreta)
+                    ])
+                    print(f"Boa! A letra '{tentativa}' está na palavra.")
+                    if palavra_oculta == palavra_secreta:
+                        limpar_tela()
+                        print(f"Parabéns, {competidor}! Você adivinhou a palavra: '{palavra_secreta}'!")
+                        display_hangman(erros)
+                        time.sleep(3)
+                        break
+                else:
+                    erros += 1
+                    print(f"A letra '{tentativa}' não está na palavra.")
+                    if erros == 6:
+                        limpar_tela()
+                        display_hangman(erros)
+                        print(f"Fim de jogo! A palavra era '{palavra_secreta}'. {desafiante} venceu!")
+                        time.sleep(3)
+                        break
+            time.sleep(2)
 
         elif tentativa == palavra_secreta:
             limpar_tela()
-            print(f"Parabéns, {competidor}! Você adivinhou a palavra '{palavra_secreta}'!")
-            print("E você estava por um triz da forca!")
+            print(f"Parabéns, {competidor}! Você adivinhou a palavra: '{palavra_secreta}'!")
             display_hangman(erros)
             time.sleep(3)
             break

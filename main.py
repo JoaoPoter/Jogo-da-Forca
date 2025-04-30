@@ -1,140 +1,97 @@
 import os
 import time
 from hangman import display_hangman
+os.system("cls")
 
-# --- constantes ---
-MAX_ERRORS = 6
-REFRESH_DELAY = 2
-
-# --- funções utilitárias ---
-def clear():
+while True:
+    challenger = input("Name of Challenger: ").strip()
+    competitor = input("Name of Competitor: ").strip()
+    errors = 0
+    time.sleep(0)
     os.system("cls")
 
-def sleep():
-    time.sleep(REFRESH_DELAY)
+    keyword = input("Secret word: ").strip().lower()
+    hints = [input("hint1"),input(" hint2"),input("hint3")]
+    hint_index = 0
+    hint_used = False
+    attempted_letters = []
+    time.sleep(0)
+    os.system("cls")
 
-# --- renderização ---
-def render(hidden, attempts, errors, challenger, competitor):
-    clear()
-    print(f"Word by {challenger}: {hidden}")
-    print(f"Attempted letters: {', '.join(attempts)}")
-    display_hangman(errors)
-
-# --- entrada do jogador ---
-def get_input(competitor, hint_index, hint_available):
-    prompt = f"{competitor}, digite uma letra, uma palavra ou "
-    prompt += f"'hint' (dica {hint_index+1})" if hint_available else ""
-    return input(prompt + ": ").strip().lower()
-
-# --- tratamento de dicas ---
-def process_hint(hints, hint_index, hint_used):
-    if hint_index < len(hints) and not hint_used:
-        print(f"Dica {hint_index+1}: {hints[hint_index]}")
-        return hint_index+1, True
-    elif hint_used:
-        print("Você precisa chutar antes de pedir outra dica.")
-    else:
-        print("Não há mais dicas disponíveis.")
-    return hint_index, hint_used
-
-# --- tratamento de letra única ---
-def process_letter(attempt, keyword, hidden, attempts, errors, competitor):
-    attempts.append(attempt)
-    # revela todas as ocorrências corretamente
-    new_hidden = list(hidden)
-    for idx, c in enumerate(keyword):
-        if c == attempt:
-            new_hidden[idx] = attempt
-    new_hidden = "".join(new_hidden)
-
-    if new_hidden != hidden:
-        print(f"Boa, '{attempt}' está na palavra!")
-    else:
-        print(f"'{attempt}' não está na palavra.")
-        errors += 1
-
-    print(f"Erros: {errors}")
-    return new_hidden, errors
-
-# --- tratamento de palavra inteira ---
-def process_word(attempt, keyword, errors, competitor):
-    if attempt == keyword:
-        print(f"Parabéns {competitor}! Você adivinhou a palavra '{keyword}'!")
-        return True, errors
-    else:
-        print(f"'{attempt}' não é a palavra correta.")
-        errors += 1
-        print(f"Erros: {errors}")
-        return False, errors
-
-# --- loop principal ---
-def main():
-    challenger = "shark"
-    competitor = "pog"
-
-    keyword = "pong"
-    hints = ["game", "atari", "ball"]
+    asterisks = '*' * len(keyword)
 
     while True:
-        errors = 0
-        hint_index = 0
-        hint_used = False
-        attempted_letters = []
-        hidden = "*" * len(keyword)
+        os.system("cls")
+        print(f"Word by {challenger}: {asterisks}")
+        print(f"Attempted letters: {', '.join(attempted_letters)}")
+        display_hangman(errors)
+        attempt = input(f"{competitor} can guess a letter and the word{'' if hint_used else f' or see hint {hint_index+1}'}: ")
+        
+        if attempt in attempted_letters:
+            print(f"You've already tried the letter '{attempt}'. Try a different one.")
+            time.sleep(2)
+            continue
 
-        while True:
-            render(hidden, attempted_letters, errors, challenger, competitor)
-            attempt = get_input(competitor, hint_index, hint_index < len(hints))
-
-            # validação básica
-            if not attempt.isalpha():
-                print("Entrada inválida. Use apenas letras.")
-                sleep()
-                continue
-
-            # comando de dica
-            if attempt == "hint":
-                hint_index, hint_used = process_hint(hints, hint_index, hint_used)
-                sleep()
-                continue
-
-            # palpite de letra
-            if len(attempt) == 1:
-                if attempt in attempted_letters:
-                    print(f"'{attempt}' já foi tentada.")
-                    sleep()
-                    continue
-                hidden, errors = process_letter(attempt, keyword, hidden, attempted_letters, errors, competitor)
-                hint_used = False  # libera próxima dica
-                sleep()
-            # palpite de palavra
-            else:
-                won, errors = process_word(attempt, keyword, errors, competitor)
-                sleep()
-                if won:
+        if attempt == 'hint' and not hint_used:
+            if hint_index < len(hints):
+                print(f"Hint {hint_index + 1}: {hints[hint_index]}")
+                hint_index += 1
+                hint_used = True
+                time.sleep(2)
+            elif hint_index == len(hints):
+                 hint_used = True
+                 print("No more hints available.")
+            continue
+        elif len(attempt) == 1 and attempt.isalpha():
+            attempted_letters.append(attempt)
+            if not hint_index == len(hints):
+                hint_used = False
+            if attempt in keyword:
+                print(f"Nice {competitor}! The letter '{attempt}' is in the word.")
+                for c in keyword:
+                    if c == attempt:
+                        asterisks = asterisks[:keyword.index(c)] + c + asterisks[keyword.index(c) + 1:]
+                print(f"Word: {asterisks}")
+                time.sleep(2)
+                os.system("cls")
+                if asterisks == keyword:
+                    print(f"Congratulations {competitor}! You guessed the word '{keyword}'!")
+                    time.sleep(2)
+                    print("and you where this close to death!")
                     display_hangman(errors)
-                    sleep()
+                    time.sleep(2)
                     break
-
-            # checa vitória ou derrota
-            if hidden == keyword:
-                print(f"Parabéns {competitor}! Palavra '{keyword}' completa!")
+            else:  
+                print(f"Sorry, the letter '{attempt}' is not in the word.")
+                errors += 1
+                print(f"Errors: {errors}")
+                time.sleep(2)
+                os.system("cls")
+                if errors == 6:
+                    display_hangman(errors)
+                    print(f"Game Over! The word was '{keyword}'.")
+                    time.sleep(2)
+                    print(f"Congratulations {challenger}! You won!")
+                    time.sleep(2.5)
+                    break
+        else:
+            if attempt == keyword:
+                print(f"Congratulations {competitor}! You guessed the word '{keyword}'!")
+                time.sleep(2)
+                print("and you where this close to death!")
                 display_hangman(errors)
-                sleep()
+                time.sleep(2)
                 break
-
-            if errors >= MAX_ERRORS:
-                display_hangman(errors)
-                print(f"Game Over! A palavra era '{keyword}'.")
-                sleep()
-                print(f"Vitória de {challenger}!")
-                sleep()
-                break
-
-        # reiniciar ou sair
-        if input("Jogar de novo? (s/n): ").strip().lower() != "s":
-            break
-        clear()
-
-if __name__ == "__main__":
-    main()
+            
+            elif hint_index == len(hints):
+                 hint_used = True
+                 print("No more hints available.")
+                 time.sleep(2)
+            elif attempt == "hint" and hint_used and hint_index < len(hints):
+                print("Hint already used.")
+                time.sleep(2)
+            else:
+                os.system("cls")
+                print("Invalid input. Please enter a single letter or 'hint'.")
+                time.sleep(2.5)
+            continue
