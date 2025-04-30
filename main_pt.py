@@ -6,6 +6,14 @@ def limpar_tela():
     os.system("cls" if os.name == "nt" else "clear")
 
 while True:
+    limpar_tela()
+    print("Bem-vindo ao Jogo da Forca!")
+    print("1. Jogar")
+    print("2. Sair")
+    if input("Escolha uma opção: ").strip() == "2":
+        print(":( Até logo!")
+        exit()
+        limpar_tela()
     desafiante = input("Desafiante, digite seu nome: ").strip()
     competidor = input("Competidor, digite seu nome: ").strip()
 
